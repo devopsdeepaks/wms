@@ -1,0 +1,312 @@
+{% extends "base.html" %} {% block content %}
+<div class="row">
+  <div class="col-12">
+    <h1 class="mb-4">
+      <i class="fas fa-chart-dashboard me-2"></i>
+      WMS Dashboard
+    </h1>
+  </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+  <div class="col-md-3 mb-3">
+    <div class="card stat-card">
+      <div class="card-body text-center">
+        <i class="fas fa-boxes fa-2x text-primary mb-3"></i>
+        <h3 class="card-title" id="total-products">
+          {{ data.get('total_products', 0) }}
+        </h3>
+        <p class="card-text text-muted">Total Products</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 mb-3">
+    <div class="card stat-card">
+      <div class="card-body text-center">
+        <i class="fas fa-layer-group fa-2x text-success mb-3"></i>
+        <h3 class="card-title" id="total-combos">
+          {{ data.get('total_combos', 0) }}
+        </h3>
+        <p class="card-text text-muted">Combo Products</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 mb-3">
+    <div class="card stat-card">
+      <div class="card-body text-center">
+        <i class="fas fa-link fa-2x text-info mb-3"></i>
+        <h3 class="card-title" id="total-mappings">
+          {{ data.get('total_mappings', 0) }}
+        </h3>
+        <p class="card-text text-muted">SKU Mappings</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 mb-3">
+    <div class="card stat-card">
+      <div class="card-body text-center">
+        <i class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
+        <h3 class="card-title" id="low-stock">
+          {{ data.get('low_stock_count', 0) }}
+        </h3>
+        <p class="card-text text-muted">Low Stock Items</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">
+          <i class="fas fa-chart-pie me-2"></i>
+          Stock Distribution
+        </h5>
+      </div>
+      <div class="card-body">
+        <div id="stock-chart" style="height: 400px"></div>
+        <div class="loading text-center p-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-2">Loading chart data...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">
+          <i class="fas fa-exclamation-circle me-2"></i>
+          Alerts
+        </h5>
+      </div>
+      <div class="card-body">
+        <div id="alerts-container">
+          {% if data.get('negative_stock_count', 0) > 0 %}
+          <div class="alert alert-danger">
+            <strong>{{ data.get('negative_stock_count', 0) }}</strong> items
+            have negative stock!
+          </div>
+          {% endif %} {% if data.get('low_stock_count', 0) > 0 %}
+          <div class="alert alert-warning">
+            <strong>{{ data.get('low_stock_count', 0) }}</strong> items are low
+            in stock.
+          </div>
+          {% endif %} {% if data.get('error') %}
+          <div class="alert alert-danger">
+            <strong>Error:</strong> {{ data.get('error') }}
+          </div>
+          {% endif %}
+
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            System is ready for file processing.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+  <div class="col-md-4 mb-3">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">
+          <i class="fas fa-upload me-2"></i>
+          Process Sales Files
+        </h5>
+      </div>
+      <div class="card-body">
+        <p class="card-text">
+          Upload and process sales files from Amazon, Flipkart, and Meesho.
+        </p>
+        <a href="/upload" class="btn btn-primary">
+          <i class="fas fa-upload me-2"></i>
+          Upload Files
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 mb-3">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">
+          <i class="fas fa-boxes me-2"></i>
+          Manage Inventory
+        </h5>
+      </div>
+      <div class="card-body">
+        <p class="card-text">
+          View and manage current inventory levels and stock status.
+        </p>
+        <a href="/inventory" class="btn btn-primary">
+          <i class="fas fa-boxes me-2"></i>
+          View Inventory
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 mb-3">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">
+          <i class="fas fa-file-alt me-2"></i>
+          Generate Reports
+        </h5>
+      </div>
+      <div class="card-body">
+        <p class="card-text">
+          Download processed files and generate inventory reports.
+        </p>
+        <a href="/reports" class="btn btn-primary">
+          <i class="fas fa-file-alt me-2"></i>
+          View Reports
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">
+          <i class="fas fa-clock me-2"></i>
+          System Status
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <h6>Data Sources</h6>
+            <ul class="list-unstyled">
+              <li>
+                <i class="fas fa-check-circle text-success me-2"></i>
+                WMS Excel File: Connected
+              </li>
+              <li>
+                <i class="fas fa-check-circle text-success me-2"></i>
+                SKU Mapping: {{ data.get('total_mappings', 0) }} entries
+              </li>
+              <li>
+                <i class="fas fa-check-circle text-success me-2"></i>
+                Combo Products: {{ data.get('total_combos', 0) }} combos
+              </li>
+            </ul>
+          </div>
+          <div class="col-md-6">
+            <h6>System Health</h6>
+            <div class="progress mb-2">
+              <div class="progress-bar bg-success" style="width: 95%"></div>
+            </div>
+            <small class="text-muted">All systems operational (95%)</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    loadDashboardData();
+
+    // Refresh data every 30 seconds
+    setInterval(loadDashboardData, 30000);
+  });
+
+  function loadDashboardData() {
+    showLoading(true);
+
+    fetch("/api/dashboard-data")
+      .then((response) => response.json())
+      .then((data) => {
+        updateStatistics(data);
+        updateCharts(data);
+        showLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error loading dashboard data:", error);
+        showAlert("Failed to load dashboard data", "danger");
+        showLoading(false);
+      });
+  }
+
+  function updateStatistics(data) {
+    document.getElementById("total-products").textContent = formatNumber(
+      data.total_products || 0
+    );
+    document.getElementById("total-combos").textContent = formatNumber(
+      data.total_combos || 0
+    );
+    document.getElementById("total-mappings").textContent = formatNumber(
+      data.total_mappings || 0
+    );
+    document.getElementById("low-stock").textContent = formatNumber(
+      data.low_stock_count || 0
+    );
+  }
+
+  function updateCharts(data) {
+    if (data.charts && data.charts.stock_distribution) {
+      const chartData = data.charts.stock_distribution;
+
+      const pieChart = {
+        values: chartData.values,
+        labels: chartData.labels,
+        type: "pie",
+        hole: 0.4,
+        marker: {
+          colors: ["#dc2626", "#d97706", "#059669", "#2563eb"],
+        },
+        textinfo: "label+percent",
+        textposition: "auto",
+        hovertemplate:
+          "<b>%{label}</b><br>Count: %{value}<br>Percentage: %{percent}<extra></extra>",
+      };
+
+      const layout = {
+        showlegend: true,
+        legend: {
+          orientation: "v",
+          x: 1,
+          y: 0.5,
+        },
+        margin: {
+          t: 20,
+          b: 20,
+          l: 20,
+          r: 80,
+        },
+        font: {
+          family: "Segoe UI, sans-serif",
+        },
+      };
+
+      const config = {
+        responsive: true,
+        displayModeBar: false,
+      };
+
+      Plotly.newPlot("stock-chart", [pieChart], layout, config);
+    } else {
+      // Show empty state
+      document.getElementById("stock-chart").innerHTML = `
+            <div class="text-center text-muted p-4">
+                <i class="fas fa-chart-pie fa-3x mb-3"></i>
+                <p>No chart data available</p>
+            </div>
+        `;
+    }
+  }
+</script>
+{% endblock %}

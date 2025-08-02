@@ -1,0 +1,506 @@
+{% extends "base.html" %} {% block content %}
+<div class="row">
+  <div class="col-12">
+    <h1 class="mb-4">
+      <i class="fas fa-upload me-2"></i>
+      Upload Sales Files
+    </h1>
+    <p class="text-muted mb-4">
+      Upload CSV files from Amazon, Flipkart, and Meesho to process sales data
+      and update inventory.
+    </p>
+  </div>
+</div>
+
+<!-- Upload Section -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">
+          <i class="fas fa-cloud-upload-alt me-2"></i>
+          File Upload
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="upload-zone" id="upload-zone">
+          <div class="text-center p-5">
+            <i class="fas fa-cloud-upload-alt fa-4x text-primary mb-3"></i>
+            <h4>Drag & Drop Files Here</h4>
+            <p class="text-muted">or click to browse files</p>
+            <input
+              type="file"
+              id="file-input"
+              multiple
+              accept=".csv,.xlsx"
+              style="display: none"
+            />
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="document.getElementById('file-input').click()"
+            >
+              <i class="fas fa-folder-open me-2"></i>
+              Browse Files
+            </button>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="mt-3 loading">
+          <div class="progress">
+            <div
+              class="progress-bar progress-bar-striped progress-bar-animated"
+              role="progressbar"
+              style="width: 0%"
+              id="upload-progress"
+            ></div>
+          </div>
+          <small class="text-muted mt-2 d-block" id="upload-status"
+            >Uploading files...</small
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Uploaded Files -->
+<div class="row mb-4" id="uploaded-files-section" style="display: none">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">
+          <i class="fas fa-file-alt me-2"></i>
+          Uploaded Files
+        </h5>
+      </div>
+      <div class="card-body">
+        <div id="uploaded-files-list"></div>
+        <div class="mt-3">
+          <button
+            type="button"
+            class="btn btn-success"
+            id="process-btn"
+            onclick="processFiles()"
+          >
+            <i class="fas fa-cogs me-2"></i>
+            Process Files
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary ms-2"
+            onclick="clearFiles()"
+          >
+            <i class="fas fa-trash me-2"></i>
+            Clear All
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Processing Results -->
+<div class="row" id="results-section" style="display: none">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">
+          <i class="fas fa-check-circle me-2"></i>
+          Processing Results
+        </h5>
+      </div>
+      <div class="card-body">
+        <div id="processing-results"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Platform Guide -->
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">
+          <i class="fas fa-info-circle me-2"></i>
+          Supported Platforms & File Formats
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-4">
+            <h6><i class="fab fa-amazon text-warning me-2"></i>Amazon</h6>
+            <ul class="list-unstyled small">
+              <li>• Must contain 'FNSKU' column</li>
+              <li>• 'Event Type' = 'Shipments'</li>
+              <li>• 'Disposition' = 'SELLABLE'</li>
+              <li>• 'Quantity' column required</li>
+            </ul>
+          </div>
+          <div class="col-md-4">
+            <h6>
+              <i class="fas fa-shopping-cart text-primary me-2"></i>Flipkart
+            </h6>
+            <ul class="list-unstyled small">
+              <li>• Must contain 'SKU' column</li>
+              <li>• 'ORDER ITEM ID' or 'FSN' present</li>
+              <li>• 'Quantity' column required</li>
+              <li>• CSV format preferred</li>
+            </ul>
+          </div>
+          <div class="col-md-4">
+            <h6><i class="fas fa-store text-success me-2"></i>Meesho</h6>
+            <ul class="list-unstyled small">
+              <li>• Must contain 'SKU' column</li>
+              <li>• 'SUB ORDER NO' present</li>
+              <li>• 'Quantity' column required</li>
+              <li>• CSV format preferred</li>
+            </ul>
+          </div>
+        </div>
+        <div class="alert alert-info mt-3">
+          <i class="fas fa-lightbulb me-2"></i>
+          <strong>Tip:</strong> The system automatically detects the platform
+          based on column names. Ensure your files have the correct column
+          headers for accurate processing.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .upload-zone {
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .upload-zone:hover {
+    border-color: var(--primary-color);
+    background-color: rgba(37, 99, 235, 0.05);
+  }
+
+  .upload-zone.dragover {
+    border-color: var(--primary-color);
+    background-color: rgba(37, 99, 235, 0.1);
+  }
+
+  .file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    background-color: #f8fafc;
+  }
+
+  .file-item .file-info {
+    display: flex;
+    align-items: center;
+  }
+
+  .file-item .file-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .platform-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+
+  .platform-amazon {
+    background-color: #fbbf24;
+    color: #92400e;
+  }
+  .platform-flipkart {
+    background-color: #3b82f6;
+    color: white;
+  }
+  .platform-meesho {
+    background-color: #10b981;
+    color: white;
+  }
+  .platform-unknown {
+    background-color: #6b7280;
+    color: white;
+  }
+</style>
+{% endblock %} {% block scripts %}
+<script>
+  let uploadedFiles = [];
+
+  document.addEventListener("DOMContentLoaded", function () {
+    initializeUpload();
+  });
+
+  function initializeUpload() {
+    const uploadZone = document.getElementById("upload-zone");
+    const fileInput = document.getElementById("file-input");
+
+    // Click to upload
+    uploadZone.addEventListener("click", () => fileInput.click());
+
+    // Drag and drop
+    uploadZone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      uploadZone.classList.add("dragover");
+    });
+
+    uploadZone.addEventListener("dragleave", () => {
+      uploadZone.classList.remove("dragover");
+    });
+
+    uploadZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      uploadZone.classList.remove("dragover");
+      handleFiles(e.dataTransfer.files);
+    });
+
+    // File input change
+    fileInput.addEventListener("change", (e) => {
+      handleFiles(e.target.files);
+    });
+  }
+
+  function handleFiles(files) {
+    const validFiles = Array.from(files).filter((file) => {
+      const extension = file.name.split(".").pop().toLowerCase();
+      return ["csv", "xlsx"].includes(extension);
+    });
+
+    if (validFiles.length === 0) {
+      showAlert("Please select valid CSV or Excel files", "warning");
+      return;
+    }
+
+    uploadFiles(validFiles);
+  }
+
+  function uploadFiles(files) {
+    const formData = new FormData();
+    files.forEach((file) => formData.append("files", file));
+
+    showLoading(true);
+    updateProgress(0, "Uploading files...");
+
+    fetch("/api/upload", {
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        showLoading(false);
+
+        if (data.status === "success") {
+          uploadedFiles = uploadedFiles.concat(data.files);
+          updateFilesList();
+          showAlert(
+            `Successfully uploaded ${data.files.length} files`,
+            "success"
+          );
+          document.getElementById("uploaded-files-section").style.display =
+            "block";
+        } else {
+          showAlert(data.message, "danger");
+        }
+      })
+      .catch((error) => {
+        showLoading(false);
+        console.error("Upload error:", error);
+        showAlert("Failed to upload files", "danger");
+      });
+  }
+
+  function updateFilesList() {
+    const container = document.getElementById("uploaded-files-list");
+    container.innerHTML = "";
+
+    uploadedFiles.forEach((file, index) => {
+      const platform = detectPlatform(file.name);
+      const fileDiv = document.createElement("div");
+      fileDiv.className = "file-item";
+      fileDiv.innerHTML = `
+            <div class="file-info">
+                <i class="fas fa-file-csv me-2 text-primary"></i>
+                <span class="fw-medium">${file.name}</span>
+                <span class="platform-badge platform-${platform.toLowerCase()} ms-2">${platform}</span>
+            </div>
+            <div class="file-actions">
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeFile(${index})">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+      container.appendChild(fileDiv);
+    });
+  }
+
+  function detectPlatform(filename) {
+    const name = filename.toLowerCase();
+    if (name.includes("amazon") || name.includes("fnsku")) return "Amazon";
+    if (name.includes("flipkart") || name.includes("fk")) return "Flipkart";
+    if (name.includes("meesho")) return "Meesho";
+    return "Unknown";
+  }
+
+  function removeFile(index) {
+    uploadedFiles.splice(index, 1);
+    updateFilesList();
+
+    if (uploadedFiles.length === 0) {
+      document.getElementById("uploaded-files-section").style.display = "none";
+    }
+  }
+
+  function clearFiles() {
+    uploadedFiles = [];
+    document.getElementById("uploaded-files-section").style.display = "none";
+    document.getElementById("results-section").style.display = "none";
+  }
+
+  function processFiles() {
+    if (uploadedFiles.length === 0) {
+      showAlert("No files to process", "warning");
+      return;
+    }
+
+    const processBtn = document.getElementById("process-btn");
+    processBtn.disabled = true;
+    processBtn.innerHTML =
+      '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+
+    fetch("/api/process", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        files: uploadedFiles,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        processBtn.disabled = false;
+        processBtn.innerHTML = '<i class="fas fa-cogs me-2"></i>Process Files';
+
+        displayResults(data);
+        document.getElementById("results-section").style.display = "block";
+
+        if (data.status === "success") {
+          showAlert("Files processed successfully!", "success");
+        } else {
+          showAlert("Processing completed with some issues", "warning");
+        }
+      })
+      .catch((error) => {
+        processBtn.disabled = false;
+        processBtn.innerHTML = '<i class="fas fa-cogs me-2"></i>Process Files';
+        console.error("Processing error:", error);
+        showAlert("Failed to process files", "danger");
+      });
+  }
+
+  function displayResults(data) {
+    const container = document.getElementById("processing-results");
+
+    let html = '<div class="row">';
+
+    // File Results
+    html += '<div class="col-md-8">';
+    html +=
+      '<h6><i class="fas fa-file-alt me-2"></i>File Processing Results</h6>';
+
+    data.file_results.forEach((result) => {
+      const statusClass = result.status === "success" ? "success" : "danger";
+      const statusIcon =
+        result.status === "success" ? "check-circle" : "exclamation-triangle";
+
+      html += `
+            <div class="alert alert-${statusClass}">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-${statusIcon} me-2"></i>
+                        <strong>${result.file}</strong>
+                        ${
+                          result.status === "success"
+                            ? `- Processed ${result.processed_rows} rows, ${result.inventory_changes} inventory changes`
+                            : `- ${result.message}`
+                        }
+                    </div>
+                    ${
+                      result.output_file
+                        ? `<a href="/reports" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-download me-1"></i>View Report
+                        </a>`
+                        : ""
+                    }
+                </div>
+            </div>
+        `;
+    });
+
+    html += "</div>";
+
+    // Inventory Update Results
+    html += '<div class="col-md-4">';
+    html += '<h6><i class="fas fa-boxes me-2"></i>Inventory Update</h6>';
+
+    if (data.inventory_update) {
+      const inv = data.inventory_update;
+      const statusClass =
+        inv.status === "success"
+          ? "success"
+          : inv.status === "warning"
+          ? "warning"
+          : "danger";
+
+      html += `
+            <div class="alert alert-${statusClass}">
+                <strong>${inv.message}</strong>
+                ${
+                  inv.updated_items
+                    ? `<br><small>Updated ${inv.updated_items} items</small>`
+                    : ""
+                }
+            </div>
+        `;
+
+      if (inv.warnings && inv.warnings.length > 0) {
+        html += '<h6 class="mt-3">Warnings:</h6>';
+        html += '<ul class="list-unstyled small">';
+        inv.warnings.slice(0, 5).forEach((warning) => {
+          html += `<li><i class="fas fa-exclamation-triangle text-warning me-1"></i>${warning}</li>`;
+        });
+        if (inv.warnings.length > 5) {
+          html += `<li><small>... and ${
+            inv.warnings.length - 5
+          } more warnings</small></li>`;
+        }
+        html += "</ul>";
+      }
+    }
+
+    html += "</div>";
+    html += "</div>";
+
+    container.innerHTML = html;
+  }
+
+  function updateProgress(percent, status) {
+    const progressBar = document.getElementById("upload-progress");
+    const statusText = document.getElementById("upload-status");
+
+    progressBar.style.width = percent + "%";
+    statusText.textContent = status;
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,23 @@
+# WMS System Requirements
+# Install with: pip install -r requirements.txt
+
+# Core Flask Web Framework
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+Werkzeug==2.3.7
+
+# Data Processing and Analysis
+pandas==2.1.1
+numpy==1.24.3
+
+# Visualization and Charts
+plotly==5.17.0
+
+# Database Support
+SQLAlchemy==2.0.21
+
+# File Processing (Excel support)
+openpyxl==3.1.2
+
+# Production Server (optional)
+gunicorn==21.2.0

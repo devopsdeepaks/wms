@@ -1,0 +1,48 @@
+# WMS System Requirements - Part 4: AI Data Layer
+# Install with: pip install -r requirements_ai.txt
+
+# Core Flask and Web Framework
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+
+# Data Processing and Analysis
+pandas==2.1.1
+numpy==1.24.3
+sqlite3  # Built into Python
+
+# Visualization and Charts
+plotly==5.17.0
+matplotlib==3.7.2
+seaborn==0.12.2
+
+# AI and Machine Learning (Optional - for advanced features)
+# openai==0.28.1  # Uncomment and add API key for production AI features
+# transformers==4.34.0  # For local AI models
+# sentence-transformers==2.2.2  # For semantic search
+
+# Database Drivers
+psycopg2-binary==2.9.7  # PostgreSQL
+pymysql==1.1.0          # MySQL
+SQLAlchemy==2.0.21      # Core ORM
+
+# Utilities
+python-dateutil==2.8.2
+werkzeug==2.3.7
+jinja2==3.1.2
+
+# Development and Testing
+pytest==7.4.2
+pytest-flask==1.2.0
+
+# Security and Performance
+cryptography==41.0.4
+gunicorn==21.2.0  # For production deployment
+
+# File Processing
+openpyxl==3.1.2
+xlrd==2.0.1
+
+# Additional AI Libraries (Optional)
+# scikit-learn==1.3.0     # For machine learning
+# spacy==3.6.1            # For NLP
+# nltk==3.8.1             # For text processing
